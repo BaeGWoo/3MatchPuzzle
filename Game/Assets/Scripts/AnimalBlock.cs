@@ -8,7 +8,7 @@ public class AnimalBlock : MonoBehaviour
 {
    [SerializeField] float curRow;
     [SerializeField] float curCol;
-    float speed = 200.0f;
+    float speed = 50.0f;
 
 
     public void SetPosition(float row, float col)

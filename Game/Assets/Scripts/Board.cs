@@ -120,119 +120,62 @@ public class Board : MonoBehaviour
 
     public void BlockMoveCheck(int row, int col)
     {
-        BlockDownCheck(row, col);
         BlockLeftCheck(row, col);
-       //bool isMoving = false;
-       //int x=row;
-       //int y=col;
+       bool isMoving = false;
+       int x=row;
+       int y=col;
 
-
-        //아래
-        //if (row+1<10)
-        //{
-        //    if (boardMap[row + 1, col] <= 2)
-        //    {
-        //        if (boardTable[row + 1, col] == 0)
-        //        {
-        //            isMoving = true;
-        //            x =row+1;
-        //            y = col;
-        //           
-        //            //Debug.Log("아래이동");
-        //        }
-        //    }
-        //    
-        //}
-        
-
-        //왼쪽아래
-        //왼쪽에 장애물 없는경우가능
-        //else if (col - 1 > 0)
-        //{
-        //    if (boardMap[row, col-1] <= 2)
-        //    {
-        //        if (row + 1 < 10)
-        //        {
-        //            if (boardTable[row + 1, col - 1] == 0)
-        //            {
-        //                isMoving = true;
-        //                x = row + 1;
-        //                y = col-1;
-        //            }
-        //        }
-        //    }
-        //}
-        //오른쪽아래
-        //오른쪽 장애물(None,Mission,Mission2) 없는경우 가능
-        //else if (col + 1 < 7)
-        //{
-        //    if (boardMap[row, col + 1] <= 2)
-        //    {
-        //        if (row + 1 < 9)
-        //        {
-        //            if (boardTable[row+1, col+1] == 0)
-        //            {
-        //                isMoving = true;
-        //                moveToRow = row + 1;
-        //                moveToCol = col+1;
-        //                Debug.Log("오른쪽아래이동");
-        //            }
-        //        }
-        //    }
-        //}
-
-
-        //if (isMoving)
-        //{
-        //    boardTable[row, col] = 0;
-        //    boardTable[x, y] = 1;
-        //    dynamicBoard[x, y] = dynamicBoard[row, col];
-        //
-        //    MoveBlock(row, col, x, y);
-        //    BlockMoveCheck(x, y);
-        //}
-    }
-    public void BlockDownCheck(int row, int col)
-    {
-        bool isMoving = false;
-        int x = row;
-        int y = col;
-
-
-        //아래
-        if (row + 1 < 10)
+        if(BlockDownCheck(row, col))
         {
-            if (boardMap[row + 1, col] <= 2)
-            {
-                if (boardTable[row + 1, col] == 0)
-                {
-                    isMoving = true;
-                    x = row + 1;
-                    y = col;
-
-                    //Debug.Log("아래이동");
-                }
-            }
-
+            isMoving = true;
+            x = row + 1;
+            y = col;
         }
+
+        else if(BlockLeftCheck(row, col))
+        {
+            isMoving = true;
+            x = row + 1;
+            y = col - 1;
+        }
+
+        else if(BlockRightCheck(row, col))
+        {
+            isMoving = true;
+            x = row + 1;
+            y = col + 1;
+        }
+
+       
 
         if (isMoving)
         {
             boardTable[row, col] = 0;
             boardTable[x, y] = 1;
             dynamicBoard[x, y] = dynamicBoard[row, col];
-
+        
             MoveBlock(row, col, x, y);
             BlockMoveCheck(x, y);
         }
     }
-
-    public void BlockLeftCheck(int row, int col)
+    public bool BlockDownCheck(int row, int col)
     {
-        bool isMoving = false;
-        int x = row;
-        int y = col;
+        if (row + 1 < 10)
+        {
+            if (boardMap[row + 1, col] <= 2)
+            {
+                if (boardTable[row + 1, col] == 0)
+                {
+                    return true;
+                }
+            }
 
+        }
+        return false;      
+    }
+
+    public bool BlockLeftCheck(int row, int col)
+    {
         if (col - 1 > 0)
         {
             if (boardMap[row, col - 1] <= 2)
@@ -241,28 +184,36 @@ public class Board : MonoBehaviour
                 {
                     if (boardTable[row + 1, col - 1] == 0)
                     {
-                        isMoving = true;
-                        x = row + 1;
-                        y = col - 1;
+                        return true;
                     }
                 }
             }
         }
+        return false;
+       
+    }
 
-        if (isMoving)
+    public bool BlockRightCheck(int row, int col)
+    {
+        if (col + 1 < 7)
         {
-            boardTable[row, col] = 0;
-            boardTable[x, y] = 1;
-            dynamicBoard[x, y] = dynamicBoard[row, col];
-
-            MoveBlock(row, col, x, y);
-            BlockMoveCheck(x, y);
+            if (boardMap[row, col + 1] <= 2)
+            {
+                if (row + 1 < 10)
+                {
+                    if (boardTable[row + 1, col + 1] == 0)
+                    {
+                        return true;
+                    }
+                }
+            }
         }
+        return false;
     }
 
 
 
-    public void CreateNewBlock(int row, int col, int animalNum)
+        public void CreateNewBlock(int row, int col, int animalNum)
     {
         GameObject newBlock = Instantiate(AnimalPrefab);
         newBlock.transform.SetParent(transform);
