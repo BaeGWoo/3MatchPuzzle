@@ -8,7 +8,8 @@ public class AnimalBlock : MonoBehaviour
 {
    [SerializeField] float curRow;
     [SerializeField] float curCol;
-    float speed = 50.0f;
+    [SerializeField] bool DownMoving = false;
+    float speed = 150.0f;
 
 
     public void SetPosition(float row, float col)
@@ -18,9 +19,16 @@ public class AnimalBlock : MonoBehaviour
     }
 
 
-    public void MoveTo(float rowPadding, float colPadding, float animalRowPadding, float animalColPadding)
+    public void Move(float rowPadding, float colPadding, float animalRowPadding, float animalColPadding)
     {
-        StartCoroutine(BlockMove(rowPadding, colPadding, animalRowPadding, animalColPadding));
+        DownMoving = true;
+        //StartCoroutine(BlockMove(rowPadding, colPadding, animalRowPadding, animalColPadding));
+        
+    }
+
+    public void MoveTo(int row, int col)
+    {
+        StartCoroutine(BlockMoveTo(row, col));
     }
 
     IEnumerator BlockMove(float rowPadding, float colPadding, float animalRowPadding, float animalColPadding)
@@ -35,5 +43,23 @@ public class AnimalBlock : MonoBehaviour
         }
 
         transform.localPosition = targetPosition;
+        DownMoving = false;
+    }
+
+    IEnumerator BlockMoveTo(int row, int col)
+    {
+        Vector2 targetPosition = new Vector2(row,col);
+        while (Vector2.Distance(transform.localPosition, targetPosition) > 0.01f)
+        {
+            transform.localPosition = Vector3.MoveTowards(transform.localPosition, targetPosition, speed * Time.deltaTime);
+            yield return null;
+        }
+        transform.localPosition = targetPosition;
+        //DownMoving = false;
+    }
+
+    public bool DownMoveCheck()
+    {
+        return DownMoving;
     }
 }

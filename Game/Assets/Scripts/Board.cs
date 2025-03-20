@@ -13,6 +13,9 @@ public class Board : MonoBehaviour
     [SerializeField] GameObject AnimalPrefab;
     [SerializeField] int[,] boardMap=new int[10,7];
 
+    [SerializeField] int row;
+    [SerializeField] int col;
+
     [SerializeField] int rowPadding;
     [SerializeField] int colPadding;
     [SerializeField] int animalRowPadding;
@@ -20,8 +23,22 @@ public class Board : MonoBehaviour
     [SerializeField] List<int> animalNumbers = new List<int>();
     public int[,] boardTable = new int[10, 7];
     public GameObject[,] dynamicBoard=new GameObject[10, 7];
+
+    public enum BlockType
+    {
+        BASIC,
+        MISSION1,
+        MISSION2,
+        BREAKABLE,
+        NONE
+    }
+
+
     void Start()
     {
+        row = 10;
+        col = 7;
+
         for(int i = 0; i < AnimalBlock.Length; i++)
         {
             animalNumbers.Add(i);
@@ -69,38 +86,40 @@ public class Board : MonoBehaviour
                 count = 0;
             }
 
-            if (boardTable[1, i] == 0 && boardMap[1, i] <= 2)
-            {
+            //if (boardTable[1, i] == 0 && boardMap[1, i] <= 2)
+            //{
                 CreateNewBlock(0 , i,animalNum);
-                BlockMoveCheck(0, i);
-            }
+                //BlockMoveCheck(0, i);
+            //}
         }
+
+        boardFulling();
     }
     private void Update()
     {
-        int count = 0;
-        for (int i = 0; i < 7; i++)
-        {
-            int animalNum = animalNumbers[Random.Range(0, animalNumbers.Count)];
-            if (i > 0 && boardMap[0, i - 1] == animalNum)
-                count++;
-            else count = 0;
-
-            if (count >= 3)
-            {
-                int temp = animalNum;
-                animalNumbers.Remove(animalNum);
-                animalNum = animalNumbers[Random.Range(0, animalNumbers.Count)];
-                animalNumbers.Add(temp);
-                count = 0;
-            }
-
-            if (boardTable[1, i] == 0 && boardMap[1,i]<=2)
-            {
-                CreateNewBlock(0, i, animalNum);
-                BlockMoveCheck(0, i);
-            }
-        }
+       // int count = 0;
+       // for (int i = 0; i < 7; i++)
+       // {
+       //     int animalNum = animalNumbers[Random.Range(0, animalNumbers.Count)];
+       //     if (i > 0 && boardMap[0, i - 1] == animalNum)
+       //         count++;
+       //     else count = 0;
+       //
+       //     if (count >= 3)
+       //     {
+       //         int temp = animalNum;
+       //         animalNumbers.Remove(animalNum);
+       //         animalNum = animalNumbers[Random.Range(0, animalNumbers.Count)];
+       //         animalNumbers.Add(temp);
+       //         count = 0;
+       //     }
+       //
+       //     if (boardTable[1, i] == 0 && boardMap[1,i]<=2)
+       //     {
+       //         CreateNewBlock(0, i, animalNum);
+       //         BlockMoveCheck(0, i);
+       //     }
+       // }
 
         
     }
@@ -120,7 +139,6 @@ public class Board : MonoBehaviour
 
     public void BlockMoveCheck(int row, int col)
     {
-        BlockLeftCheck(row, col);
        bool isMoving = false;
        int x=row;
        int y=col;
@@ -158,56 +176,180 @@ public class Board : MonoBehaviour
             BlockMoveCheck(x, y);
         }
     }
+
+
+    public void boardFulling()
+    {
+        
+        bool result = false;
+        int pivotrow = -1;
+        int pivotcol = -1;
+
+        do
+        {
+            for (int i = row - 1; i > 0; i--)
+            {
+                for (int j = 0; j < col; j++)
+                {
+                    if (dynamicBoard[i, j] != null)
+                        continue;
+
+                    if (BlockDownCheck(i, j))
+                    {
+                        Debug.Log("현재 (" + i + " , " + j + " ) => Down");
+                        result = true;
+                        pivotrow = i - 1;
+                        pivotcol = j;
+                    }
+
+                   
+                    if (pivotrow == -1)
+                        continue;
+
+                    //pivotrow,pivotcol 위치의 블록 i,j로 이동
+                    if (pivotrow == 0)
+                        dynamicBoard[pivotrow, pivotcol].SetActive(true);
+
+                    dynamicBoard[pivotrow, pivotcol].GetComponent<AnimalBlock>().MoveTo
+                        (j * rowPadding + animalRowPadding, i * colPadding + animalColPadding);
+                    dynamicBoard[pivotrow, pivotcol] = dynamicBoard[i, j];
+                    dynamicBoard[i, j] = null;
+
+                    if (pivotrow == 0)
+                    {
+                        int animalNum = animalNumbers[Random.Range(0, animalNumbers.Count)];
+                        CreateNewBlock(0, j, animalNum);
+                    }
+                }
+            }
+        } while (result);
+
+
+        do
+        {
+            for (int i = row - 1; i > 0; i--)
+            {
+                for (int j = 0; j < col; j++)
+                {
+                    if (dynamicBoard[i, j] != null)
+                        continue;
+
+                   if (BlockLeftCheck(i, j))
+                    {
+                        Debug.Log("현재 (" + i + " , " + j + " ) => Left");
+                        result = true;
+                        pivotrow = i - 1;
+                        pivotcol = j - 1;
+                    }
+
+                   
+                    if (pivotrow == -1)
+                        continue;
+
+                    //pivotrow,pivotcol 위치의 블록 i,j로 이동
+                    if (pivotrow == 0)
+                        dynamicBoard[pivotrow, pivotcol].SetActive(true);
+
+                    dynamicBoard[pivotrow, pivotcol].GetComponent<AnimalBlock>().MoveTo
+                        (j * rowPadding + animalRowPadding, i * colPadding + animalColPadding);
+                    dynamicBoard[pivotrow, pivotcol] = dynamicBoard[i, j];
+                    dynamicBoard[i, j] = null;
+
+                    if (pivotrow == 0)
+                    {
+                        int animalNum = animalNumbers[Random.Range(0, animalNumbers.Count)];
+                        CreateNewBlock(0, j, animalNum);
+                    }
+                }
+            }
+        } while (result);
+
+        do
+        {
+            for (int i = row - 1; i > 0; i--)
+            {
+                for (int j = 0; j < col; j++)
+                {
+                    if (dynamicBoard[i, j] != null)
+                        continue;
+
+                   if (BlockRightCheck(i, j))
+                    {
+                        Debug.Log("현재 (" + i + " , " + j + " ) => Right");
+                        result = true;
+                        pivotrow = i - 1;
+                        pivotcol = j + 1;
+                    }
+                    if (pivotrow == -1)
+                        continue;
+
+                    //pivotrow,pivotcol 위치의 블록 i,j로 이동
+                    if (pivotrow == 0)
+                        dynamicBoard[pivotrow, pivotcol].SetActive(true);
+
+                    dynamicBoard[pivotrow, pivotcol].GetComponent<AnimalBlock>().MoveTo
+                        (j * rowPadding + animalRowPadding, i * colPadding + animalColPadding);
+                    dynamicBoard[pivotrow, pivotcol] = dynamicBoard[i, j];
+                    dynamicBoard[i, j] = null;
+
+                    if (pivotrow == 0)
+                    {
+                        int animalNum = animalNumbers[Random.Range(0, animalNumbers.Count)];
+                        CreateNewBlock(0, j, animalNum);
+                    }
+                }
+            }
+        } while (result);
+
+    }
+
+
     public bool BlockDownCheck(int row, int col)
     {
-        if (row + 1 < 10)
+        if (row - 1 >= 0)
         {
-            if (boardMap[row + 1, col] <= 2)
+            if (boardMap[row - 1, col] <= 2)
             {
-                if (boardTable[row + 1, col] == 0)
+                if (dynamicBoard[row - 1, col] != null)
                 {
                     return true;
                 }
             }
-
         }
+
         return false;      
     }
 
     public bool BlockLeftCheck(int row, int col)
     {
-        if (col - 1 > 0)
+        if (row - 1 >= 0&&col-1>=0)
         {
-            if (boardMap[row, col - 1] <= 2)
+            if (boardMap[row - 1, col-1] <= 2)
             {
-                if (row + 1 < 10)
+                if (dynamicBoard[row - 1, col-1] != null)
                 {
-                    if (boardTable[row + 1, col - 1] == 0)
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
         }
+
         return false;
-       
+
     }
 
     public bool BlockRightCheck(int row, int col)
     {
-        if (col + 1 < 7)
+        if (row - 1 >= 0 && col + 1 <this.col)
         {
-            if (boardMap[row, col + 1] <= 2)
+            if (boardMap[row - 1, col + 1] <= 2)
             {
-                if (row + 1 < 10)
+                if (dynamicBoard[row - 1, col + 1] != null)
                 {
-                    if (boardTable[row + 1, col + 1] == 0)
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
         }
+
         return false;
     }
 
@@ -220,6 +362,7 @@ public class Board : MonoBehaviour
         newBlock.transform.localPosition= new Vector2(col * rowPadding + animalRowPadding, row * colPadding + animalColPadding);
         newBlock.transform.GetComponent<Image>().sprite = AnimalBlock[animalNum];
         newBlock.GetComponent<AnimalBlock>().SetPosition(row,col);
+        newBlock.SetActive(false);
         dynamicBoard[row, col] = newBlock;
 
     }
@@ -227,8 +370,8 @@ public class Board : MonoBehaviour
     public void MoveBlock(int row,int col, int x,int y)
     {
         dynamicBoard[row, col].GetComponent<AnimalBlock>().SetPosition(x, y);
-        dynamicBoard[row,col].GetComponent<AnimalBlock>().MoveTo
-            (rowPadding , colPadding, animalRowPadding,animalColPadding);
+        //dynamicBoard[row,col].GetComponent<AnimalBlock>().MoveTo
+            //(rowPadding , colPadding, animalRowPadding,animalColPadding);
         dynamicBoard[row, col] = null;
     }
 }
